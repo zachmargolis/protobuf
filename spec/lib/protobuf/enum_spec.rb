@@ -103,6 +103,12 @@ describe Protobuf::Enum do
             expect(EnumAliasTest.fetch(1)).to eq(EnumAliasTest::FOO)
           end
         end
+
+        context 'when the integer value is an unknown value' do
+          it 'fetches an unknown enum instance' do
+            expect(Test::EnumTestType.fetch(-10)).to eq(Test::EnumTestType.unknown_enum(-10))
+          end
+        end
       end
 
       context 'when candidate is not an applicable type' do
@@ -111,7 +117,6 @@ describe Protobuf::Enum do
           expect(Test::EnumTestType.fetch(Test::Resource.new)).to be_nil
           expect(Test::EnumTestType.fetch(nil)).to be_nil
           expect(Test::EnumTestType.fetch(false)).to be_nil
-          expect(Test::EnumTestType.fetch(-10)).to be_nil
         end
       end
     end
@@ -167,6 +172,19 @@ describe Protobuf::Enum do
       end
     end
 
+    describe '.unknown_enum' do
+      subject { Test::EnumTestType.unknown_enum(20) }
+
+      it 'has a nil name' do
+        expect(subject.name).to be_nil
+        expect(subject.to_s(:name)).to eq('')
+      end
+
+      it 'has an int value' do
+        expect(subject.to_i).to eq(20)
+      end
+    end
+
     describe '.enum_for_name' do
       it 'gets the Enum corresponding to the given name' do
         expect(Test::EnumTestType.enum_for_name(name)).to eq(Test::EnumTestType::THREE)
@@ -208,7 +226,20 @@ describe Protobuf::Enum do
 	its(:value) { should eq(1) }
 	its(:to_hash_value) { should eq(1) }
 	its(:to_s) { should eq("1") }
-	its(:inspect) { should eq('#<Protobuf::Enum(Test::EnumTestType)::ONE=1>') }
+
+  describe '#inspect' do
+    let(:enum_instance) { Test::EnumTestType::ONE }
+    subject { enum_instance.inspect }
+
+    it { should eq('#<Protobuf::Enum(Test::EnumTestType)::ONE=1>') }
+
+    context 'unknown enum' do
+      let(:enum_instance) { Test::EnumTestType.unknown_enum(100) }
+
+      it { should eq('#<Protobuf::Enum(Test::EnumTestType)::(UNKNOWN)=100>') }
+    end
+  end
+
   specify { subject.to_s(:tag).should eq("1") }
   specify { subject.to_s(:name).should eq("ONE") }
 

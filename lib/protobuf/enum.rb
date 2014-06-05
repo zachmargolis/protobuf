@@ -166,7 +166,7 @@ module Protobuf
       when self then
         candidate
       when ::Numeric then
-        enum_for_tag(candidate.to_i)
+        enum_for_tag(candidate.to_i) || unknown_enum(candidate.to_i)
       when ::String, ::Symbol then
         enum_for_name(candidate)
       else
@@ -219,6 +219,16 @@ module Protobuf
       tag.respond_to?(:to_i) && self.all_tags.include?(tag.to_i)
     end
 
+    # Public: Builds an instance for unknown enums (null object pattern)
+    #
+    # tag - an object that responds to_i
+    #
+    # Returns an instance of the enum that is the same as all known enums,
+    # except that is has no name
+    def self.unknown_enum(tag)
+      self.new(self, name = nil, tag)
+    end
+
     # Public: [DEPRECATED] Return a hash of Enum objects keyed
     # by their :name.
     #
@@ -267,7 +277,8 @@ module Protobuf
     end
 
     def inspect
-      "\#<Protobuf::Enum(#{parent_class})::#{name}=#{tag}>"
+      printed_name = name || '(UNKNOWN)'
+      "\#<Protobuf::Enum(#{parent_class})::#{printed_name}=#{tag}>"
     end
 
     def to_i

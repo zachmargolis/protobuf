@@ -44,11 +44,7 @@ module Protobuf
       end
 
       def typed_default_value
-        if default.is_a?(Symbol)
-          type_class.const_get(default)
-        else
-          self.class.default
-        end
+        type_class.fetch(default || self.class.default)
       end
 
     end

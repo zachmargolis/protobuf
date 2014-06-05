@@ -67,9 +67,22 @@ describe Protobuf::Message do
   end
 
   describe '#initialize' do
-    it "initializes the enum getter to 0" do
+    it "initializes the enum getter to a 0 value" do
       test_enum = Test::EnumTestMessage.new
       test_enum.non_default_enum.should eq(0)
+    end
+
+    it "initializes the enum getter to a value with a name (null object)" do
+      test_enum = Test::EnumTestMessage.new
+      expect { test_enum.non_default_enum.name }.to_not raise_error
+    end
+
+    context 'with a default value' do
+      it 'initializes the enum getter with the default value' do
+        test_enum = Test::EnumTestMessage.new
+        test_enum.default_enum.should eq(1)
+        test_enum.default_enum.name.should eq(:ONE)
+      end
     end
 
     it "exposes the enum getter raw value through ! method" do

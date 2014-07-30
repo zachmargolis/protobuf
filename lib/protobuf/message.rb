@@ -1,6 +1,7 @@
 require 'protobuf/field'
 require 'protobuf/enum'
 require 'protobuf/exceptions'
+require 'protobuf/message/extensions'
 require 'protobuf/message/fields'
 require 'protobuf/message/serialization'
 
@@ -23,6 +24,12 @@ module Protobuf
     end
 
     ##
+    # Attributes
+    #
+
+    attr_reader :extensions
+
+    ##
     # Constructor
     #
 
@@ -32,6 +39,8 @@ module Protobuf
       fields.to_hash.each_pair do |name, value|
         self[name] = value unless value.nil?
       end
+
+      @extensions = Extensions.new(extension_fields)
     end
 
     ##

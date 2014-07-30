@@ -23,14 +23,25 @@ describe Protobuf::Message do
     end
 
     context 'when defining an extension field with a tag that has already been used' do
+      subject do
+        Class.new(Protobuf::Message) do
+          extensions 100...110
+          optional ::Protobuf::Field::Int32Field, :foo, 100
+          optional ::Protobuf::Field::Int32Field, :bar, 100, :extension => true
+        end
+      end
+
       it 'raises a TagCollisionError' do
-        expect {
-          Class.new(Protobuf::Message) do
-            extensions 100...110
-            optional ::Protobuf::Field::Int32Field, :foo, 100
-            optional ::Protobuf::Field::Int32Field, :bar, 100, :extension => true
-          end
-        }.to raise_error(Protobuf::TagCollisionError, /Field number 100 has already been used/)
+        expect { subject }.to raise_error(Protobuf::TagCollisionError, /Field number 100 has already been used/)
+      end
+
+      context 'with the PB_SEPARATE_EXTENSIONS environment variable' do
+        before { ENV['PB_SEPARATE_EXTENSIONS'] = 1 }
+        after { ENV.delete('PB_SEPARATE_EXTENSIONS') }
+
+        it 'does not raise a tag collision error' do
+          expect { subject }.to_not raise_error
+        end
       end
     end
 

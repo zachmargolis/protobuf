@@ -90,18 +90,22 @@ module Protobuf
       end
 
       def define_field(rule, type_class, field_name, tag, options)
-        raise_if_tag_collision(tag, field_name)
-        raise_if_name_collision(field_name)
+        if ENV['PB_SEPARATE_EXTENSIONS'] && options[:extension]
+          define_extension_field
+        else
+          raise_if_tag_collision(tag, field_name)
+          raise_if_name_collision(field_name)
 
-        field = ::Protobuf::Field.build(self, rule, type_class, field_name, tag, options)
-        field_store[field_name] = field
-        field_store[tag] = field
+          field = ::Protobuf::Field.build(self, rule, type_class, field_name, tag, options)
+          field_store[field_name] = field
+          field_store[tag] = field
 
-        class_eval(<<-RAW_GETTER, __FILE__, __LINE__ + 1)
-          define_method("#{field_name}!") do
-            @values[:#{field_name}]
-          end
-        RAW_GETTER
+          class_eval(<<-RAW_GETTER, __FILE__, __LINE__ + 1)
+            define_method("#{field_name}!") do
+              @values[:#{field_name}]
+            end
+          RAW_GETTER
+        end
       end
 
       def raise_if_tag_collision(tag, field_name)
